@@ -1,6 +1,6 @@
 import requests
 import json
-from .models import CarDealer# import related models here
+from .models import CarDealer, DealerReview # import related models here
 from requests.auth import HTTPBasicAuth
 
 
@@ -69,7 +69,7 @@ def get_dealers_from_cf(url, **kwargs):
 #get dealer by Id
 def get_dealer_by_id(url, id):
     json_result = get_request(url, id=id)
-
+    results = []
     if json_result:
         # Get the row list in JSON as dealers
         dealers = json_result["body"]["rows"]["docs"]
@@ -84,12 +84,32 @@ def get_dealer_by_id(url, id):
                                    short_name=dealer["short_name"], st=dealer["st"], zip=dealer["zip"])
             results.append(dealer_obj)
 
-    return dealer_obj
+    return results
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-# def get_dealer_by_id_from_cf(url, dealerId):
+#def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
+def get_dealer_reviews_from_cf(url, id):
+    results = []
+    json_result = get_request(url, id=id)
+   
+
+    if json_result:
+        # Get the row list in JSON as dealers
+        reviews = json_result["body"]["rows"]["docs"]
+        # For each dealer object
+        for review in reviews:
+            # Get its content in `doc` object
+
+            #dealer_doc = dealer["doc"]
+            # Create a DealerReview object with values in `doc` object
+            review_obj = DealerReview(car_make=review["car_make"], car_model=review["car_model"],
+                                    car_year=review["car_year"], id=review["id"], dealership=review["dealership"], name=review["name"],
+                                   purchase=review["purchase"], purchase_date=review["purchase_date"], review=review["review"])
+            results.append(review_obj)
+    #remember to add sentiment
+    return results
 
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
