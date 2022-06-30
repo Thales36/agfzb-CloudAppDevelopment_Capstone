@@ -112,6 +112,7 @@ def get_dealer_details(request, id):
         url = "https://c5042e57.us-south.apigw.appdomain.cloud/review"
         reviews = get_dealer_reviews_from_cf(url, id=id)
         reviews = ' '.join([dealer_review.review for dealer_review in reviews])
+    
 
         return HttpResponse(reviews)
 

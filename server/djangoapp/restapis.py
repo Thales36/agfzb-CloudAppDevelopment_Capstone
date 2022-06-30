@@ -8,23 +8,28 @@ from requests.auth import HTTPBasicAuth
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
 def get_request(url, **kwargs):
-    
-    # If argument contain API KEY
-    api_key = kwargs.get("api_key")
+    print(kwargs)
     print("GET from {} ".format(url))
     try:
-        if api_key:
+        # Call get method of requests library with URL and parameters
+        if "api_key" in kwargs:
+            # Basic authentication GET
             params = dict()
             params["text"] = kwargs["text"]
             params["version"] = kwargs["version"]
             params["features"] = kwargs["features"]
             params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-            response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-                                    auth=HTTPBasicAuth('apikey', api_key))
+            print(params)
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                    params=params, auth=HTTPBasicAuth('apikey', kwargs["api_key"]))
         else:
-            # Call get method of requests library with URL and parameters
+            # no authentication GET
             response = requests.get(url, headers={'Content-Type': 'application/json'},
                                     params=kwargs)
+        status_code = response.status_code
+        print("With status {} ".format(status_code))
+        json_data = json.loads(response.text)
+        return json_data
     except:
         # If any error occurs
         print("Network exception occurred")
@@ -107,8 +112,15 @@ def get_dealer_reviews_from_cf(url, id):
             review_obj = DealerReview(car_make=review["car_make"], car_model=review["car_model"],
                                     car_year=review["car_year"], id=review["id"], dealership=review["dealership"], name=review["name"],
                                    purchase=review["purchase"], purchase_date=review["purchase_date"], review=review["review"])
+            
+            sentiment = analyze_review_sentiments(review_obj.review)
+            review_obj.sentiment = sentiment
+
             results.append(review_obj)
-    #remember to add sentiment
+
+        
+    
+
     return results
 
 
@@ -116,6 +128,11 @@ def get_dealer_reviews_from_cf(url, id):
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-
+def analyze_review_sentiments(text):
+    url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/27b38454-f3f7-42db-aa15-ca6d843ac564"
+    api_key = "lBjvPn8_JYSRUStwnDKtd04UoadgOE18Fsnhzbil5llx"
+    response = get_request(url, text=text, api_key=api_key, version='2020-08-01', features='sentiment', return_analyzed_text=True)
+    print(response)
+    return response
 
 
