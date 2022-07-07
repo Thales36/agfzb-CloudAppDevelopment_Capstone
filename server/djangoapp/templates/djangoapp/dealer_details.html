@@ -19,6 +19,7 @@
 
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
+                
                 <li>
                     Dealership Review
                     <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
@@ -75,7 +76,7 @@
         <p>No reviews are available.</p>
     {% endif %}
        
-
+    <a class="btn btn-link" href="{% url 'djangoapp:add_review' dealer.id%}">Add Review</a>
     </body>
 
 </html>
